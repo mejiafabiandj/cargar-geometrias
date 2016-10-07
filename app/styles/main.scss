@@ -13,3 +13,43 @@
 body {
     padding: 0;
 }
+
+
+.leaflet-shp{
+	background-image: url('../images/icn_shp.png');
+	background-repeat: no-repeat;
+	background-size: 30px 30px;
+}
+
+
+.bgroup, .upStuff{
+    display: none;
+}
+
+.easy-button-container{
+    background-color: #FFF;
+}
+
+.contenedor-coordenadas{
+    margin: 10px;
+}
+
+.contenedor-coordenadas > input, .contenedor-coordenadas > label {
+    float:left;
+    margin:5px;
+}
+.gms {
+    width: 70px !important;
+}
+.lbl-tipo {
+    width: 70px !important;
+    display: inline-block;
+}
+
+formulario-gms > div{
+    display: inline-block;
+}
+
+.error{
+    border-color: red;
+}

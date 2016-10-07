@@ -24,6 +24,8 @@ module.exports = function(config) {
       // bower:js
       'bower_components/leaflet/dist/leaflet-src.js',
       'bower_components/leaflet-draw/dist/leaflet.draw-src.js',
+      'bower_components/Leaflet.EasyButton/src/easy-button.js',
+      'bower_components/shp/dist/shp.js',
       'bower_components/chai/chai.js',
       'bower_components/mocha/mocha.js',
       // endbower

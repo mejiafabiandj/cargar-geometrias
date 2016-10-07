@@ -173,17 +173,112 @@
         },
         initialize: function (id, options) { // (HTMLElement or String, Object)
             options = IGAC.setOptions(this, options);
+            this.guid = this._guid();
             this._initContainer(id, options);
+        },
+        _guid: function () {
+            function s4() {
+                return Math.floor((1 + Math.random()) * 0x10000)
+                        .toString(16)
+                        .substring(1);
+            }
+            return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
+                    s4() + '-' + s4() + s4() + s4();
         },
         // map initialization methods
         _initContainer: function (id, options) {
+            var instancia = this;
 
             this.mapa = L.map(id, options);
 
+            var mapa = this.mapa;
 
-            var drawnItems = new L.FeatureGroup();
-            this.mapa.addLayer(drawnItems);
+            this.drawnItems = new L.FeatureGroup();
+            this.mapa.addLayer(this.drawnItems);
 
+            this.configurarSHP();
+
+            L.easyButton('<img src="images/icn_shp.png" style="margin-left:-4px; margin-top:-2px">',
+                    function (control, map) {
+                        instancia.upButton.click();
+                    },
+                    {
+                        position: 'topright'
+                    }).addTo(this.mapa);
+
+            L.easyButton('<img src="images/icn_coordenadas.png" style="margin-left:-4px; margin-top:-1px;">', function (control, map) {
+                //control.getContainer().innerHTML = "<div style='width:150px;'><form><label>aaa</label></form></div>";
+                if (!control.getContainer().querySelector(".contenedor-coordenadas")) {
+                    var form_id = Math.random().toString(36).substring(7);
+                    var div = document.createElement('div');
+                    var form = document.createElement('form');
+                    form.classList.add('formulario-gms');
+                    form.innerHTML =
+                            "<p>" +
+                            "    <label class='lbl-tipo'>Latitud</label>" +
+                            "    <input id='lat-g' class='gms' type='number' placeholder='G' required>" +
+                            "    <label>°</label>" +
+                            "    <input id='lat-m' class='gms' type='number' placeholder='M'>" +
+                            "    <label>'</label>" +
+                            "    <input id='lat-s' class='gms' type='number' placeholder='S.SS'>" +
+                            "    <label>''</label>" +
+                            "</p><p>" +
+                            "    <label class='lbl-tipo'>Longitud</label>" +
+                            "    <input id='lon-g' class='gms' type='number' placeholder='G'>" +
+                            "    <label>°</label>" +
+                            "    <input id='lon-m' class='gms' type='number' placeholder='M'>" +
+                            "    <label>'</label>" +
+                            "    <input id='lon-s' class='gms' type='number' placeholder='S.SS'>" +
+                            "    <label>''</label>" +
+                            "</p>" +
+                            "  <p style='opacity:0.5;'><i>Coordenadas geográficas en SRS WGS84</i></p>" +
+                            "  <hr>"
+                            ;
+
+                    div.id = form_id;
+                    div.appendChild(form);
+
+                    var btn = document.createElement('button');
+                    btn.style.width = '150px';
+                    btn.innerHTML = "Aceptar";
+                    div.appendChild(btn);
+
+                    btn.onclick = function () {
+                        var lat_g = parseInt(form.querySelector('#lat-g').value);
+                        var lat_m = parseInt(form.querySelector('#lat-m').value);
+                        var lat_s = parseFloat(form.querySelector('#lat-s').value);
+
+                        var lon_g = parseInt(form.querySelector('#lon-g').value);
+                        var lon_m = parseInt(form.querySelector('#lon-m').value);
+                        var lon_s = parseFloat(form.querySelector('#lon-s').value);
+
+                        var inputs = form.querySelectorAll('input');
+                        var errores = false;
+                        for (var i = 0; i < inputs.length; i++) {
+                            if (inputs[i].value && typeof (Number(inputs[i].value)) === "number") {
+                                inputs[i].classList.remove('error');
+                            } else {
+                                inputs[i].classList.add('error');
+                                errores = true;
+                            }
+                        }
+
+                        if (!errores) {
+                            var lat = lat_g + (lat_m / 60) + (lat_s / 3600);
+                            var lon = lon_g + (lon_m / 60) + (lon_s / 3600);
+
+                            instancia.drawnItems.addLayer(L.marker([lat, lon]));
+                            control.getContainer().removeChild(control.getContainer().querySelector(".contenedor-coordenadas"));
+                        }
+                    };
+
+
+                    div.classList.add("contenedor-coordenadas");
+                    control.getContainer().appendChild(div);
+                } else {
+                    control.getContainer().removeChild(control.getContainer().querySelector(".contenedor-coordenadas"));
+                }
+            }, {position: 'topright'}).addTo(this.mapa);
 
             L.drawLocal = {
                 draw: {
@@ -281,41 +376,8 @@
                     }
                 }
             };
-            /*
-             var drawControl = new L.Control.Draw({
-             position: 'topright',
-             draw: {
-             polygon: {
-             title: 'Polígono',
-             allowIntersection: false,
-             drawError: {
-             color: '#b00b00',
-             timeout: 1000
-             },
-             shapeOptions: {
-             color: '#bada55'
-             },
-             showArea: true
-             },
-             polyline: {
-             metric: true
-             //allowIntersection: false
-             },
-             circle: {
-             shapeOptions: {
-             color: '#662d91'
-             }
-             },
-             marker: true
-             },
-             edit: {
-             featureGroup: drawnItems
-             }
-             });
-             */
 
-            //Add the controls to the map
-            var drawControlSettings = {
+            var drawControl = new L.Control.Draw({
                 position: 'topright',
                 draw: {
                     polygon: {
@@ -342,47 +404,9 @@
                     marker: true
                 },
                 edit: {
-                    featureGroup: drawnItems
-                }
-            };
-            L.DrawToolbar.include({
-                getModeHandlers: function (map) {
-                    return [
-                        {
-                            enabled: this.options.polyline,
-                            handler: new L.Draw.Polyline(map, this.options.polyline),
-                            title: L.drawLocal.draw.toolbar.buttons.polyline
-                        },
-                        {
-                            enabled: this.options.polygon,
-                            handler: new L.Draw.Polygon(map, this.options.polygon),
-                            title: L.drawLocal.draw.toolbar.buttons.polygon
-                        },
-                        {
-                            enabled: this.options.rectangle,
-                            handler: new L.Draw.Rectangle(map, this.options.rectangle),
-                            title: L.drawLocal.draw.toolbar.buttons.rectangle
-                        },
-                        {
-                            enabled: this.options.circle,
-                            handler: new L.Draw.Circle(map, this.options.circle),
-                            title: L.drawLocal.draw.toolbar.buttons.circle
-                        },
-                        {
-                            enabled: this.options.marker,
-                            handler: new L.Draw.Marker(map, this.options.marker),
-                            title: L.drawLocal.draw.toolbar.buttons.marker
-                        },
-                        {
-                            enabled: true,
-                            handler: new L.Draw.CustomMarker(map, {icon: new L.Icon.Default()}),
-                            title: 'Ingresar por coordenadas'
-                        }
-                    ];
+                    featureGroup: this.drawnItems
                 }
             });
-            var drawControl = new L.Control.Draw(drawControlSettings);
-
 
             this.mapa.addControl(drawControl);
 
@@ -390,7 +414,7 @@
                 var type = e.layerType;
                 var layer = e.layer;
 
-                drawnItems.addLayer(layer);
+                instancia.drawnItems.addLayer(layer);
             });
 
             this.mapa.on('draw:edited', function (e) {
@@ -410,6 +434,76 @@
                 this.on('load', callback, context);
             }
             return this;
+        },
+        configurarSHP: function () {
+            var instancia = this;
+
+            function readerLoad(reader) {
+                if (this.readyState !== 2 || this.error) {
+                    return;
+                } else {
+                    shp(this.result).then(function (geojson) {
+                        //L.geoJson(geojson).addTo(instancia.mapa);
+                        var layers = L.geoJson(geojson).getLayers();
+                        for (var i = 0; i < layers.length; i++) {
+                            instancia.drawnItems.addLayer(layers[i]);
+                        }
+                        instancia.mapa.fitBounds(instancia.drawnItems.getBounds())
+                    });
+
+                    //worker.data(this.result, [this.result]);
+                }
+            }
+
+            function handleZipFile(file) {
+
+                var reader = new FileReader();
+                reader.onload = readerLoad;
+                reader.readAsArrayBuffer(file);
+            }
+
+            function handleFile(file) {
+
+                //mapa.spin(true);
+                if (file.name.slice(-3) === 'zip') {
+                    return handleZipFile(file);
+                }
+                return;
+            }
+
+            function makeDiv() {
+                var div = L.DomUtil.create('form', 'bgroup');
+                div.id = "dropzone";
+                return div;
+            }
+
+            function makeUp(div, handleFile) {
+                var upButton = L.DomUtil.create('input', 'upStuff', div);
+                upButton.type = "file";
+                upButton.id = instancia.guid + "_input";
+                upButton.onchange = function () {
+                    var file = document.getElementById(instancia.guid + "_input").files[0];
+                    handleFile(file);
+                };
+                return upButton;
+            }
+
+            function addFunction(map) {
+                // create the control container with a particular class name
+                var div = makeDiv();
+                instancia.upButton = makeUp(div, handleFile);
+
+                return div;
+            }
+            var NewButton = L.Control.extend({//creating the buttons
+                options: {
+                    position: 'topleft'
+                },
+                onAdd: addFunction
+            });
+            //add them to the map
+            instancia.mapa.addControl(new NewButton());
+
         }
     });
 
@@ -417,7 +511,7 @@
     IGAC.contenedor = function (id, options) {
         return new IGAC.Contenedor(id, options);
     };
-    
+
 
     L.Draw.CustomMarker = L.Draw.Feature.extend({
         statics: {

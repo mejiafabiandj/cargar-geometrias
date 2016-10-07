@@ -375,7 +375,8 @@ module.exports = function (grunt) {
                             '*.html',
                             'views/**/*.html',
                             'images/{,*/}*.{webp}',
-                            'styles/fonts/{,*/}*.*'
+                            'styles/fonts/{,*/}*.*',
+                            'styles/images/{,*/}*.*'
                         ]
                     },
                     //alertify-js
@@ -515,7 +516,7 @@ module.exports = function (grunt) {
         'cdnify',
         'cssmin',
         'uglify',
-        'filerev',
+        //'filerev',
         'usemin',
         'htmlmin'
     ]);
