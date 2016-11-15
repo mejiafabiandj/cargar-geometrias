@@ -19,7 +19,7 @@
 
         <link rel="stylesheet" href="styles/main.css">
         <!-- endbuild -->
-        
+
         <style>
             html, body{
                 height: 100%;
@@ -27,7 +27,7 @@
                 margin: 0;
             }
         </style>
-        
+
     </head>
     <body>
         <!--[if lt IE 7]>
@@ -71,7 +71,21 @@
                                 'Imagery © <a href="http://mapbox.com">Mapbox</a>',
                         id: 'mapbox.streets'
                     })
-                ]
+                ],
+                geometria_inicial: {
+                    "type": "Feature",
+                    "properties": {
+                        "name": "nombre de la geometria",
+                        "att2": "valor att 2",
+                        "att3": "valor att3…"
+                    },
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [-104.99404, 39.75621]
+                    }
+                },
+                geometria_captura: 'Poligono',
+                metodo_captura: ['Coordenadas','Dibujo','Shp']
             });
 
         </script>

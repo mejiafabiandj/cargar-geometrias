@@ -1,3 +1,5 @@
+/* global L, shp */
+
 //Based on Leaflet 0.0.7 http://leafletjs.com
 (function (window, document, undefined) {
     var oldIGAC = window.IGAC,
@@ -174,6 +176,7 @@
         initialize: function (id, options) { // (HTMLElement or String, Object)
             options = IGAC.setOptions(this, options);
             this.guid = this._guid();
+            this._langConfig();
             this._initContainer(id, options);
         },
         _guid: function () {
@@ -185,101 +188,7 @@
             return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
                     s4() + '-' + s4() + s4() + s4();
         },
-        // map initialization methods
-        _initContainer: function (id, options) {
-            var instancia = this;
-
-            this.mapa = L.map(id, options);
-
-            var mapa = this.mapa;
-
-            this.drawnItems = new L.FeatureGroup();
-            this.mapa.addLayer(this.drawnItems);
-
-            this.configurarSHP();
-
-            L.easyButton('<img src="images/icn_shp.png" style="margin-left:-4px; margin-top:-2px">',
-                    function (control, map) {
-                        instancia.upButton.click();
-                    },
-                    {
-                        position: 'topright'
-                    }).addTo(this.mapa);
-
-            L.easyButton('<img src="images/icn_coordenadas.png" style="margin-left:-4px; margin-top:-1px;">', function (control, map) {
-                //control.getContainer().innerHTML = "<div style='width:150px;'><form><label>aaa</label></form></div>";
-                if (!control.getContainer().querySelector(".contenedor-coordenadas")) {
-                    var form_id = Math.random().toString(36).substring(7);
-                    var div = document.createElement('div');
-                    var form = document.createElement('form');
-                    form.classList.add('formulario-gms');
-                    form.innerHTML =
-                            "<p>" +
-                            "    <label class='lbl-tipo'>Latitud</label>" +
-                            "    <input id='lat-g' class='gms' type='number' placeholder='G' required>" +
-                            "    <label>°</label>" +
-                            "    <input id='lat-m' class='gms' type='number' placeholder='M'>" +
-                            "    <label>'</label>" +
-                            "    <input id='lat-s' class='gms' type='number' placeholder='S.SS'>" +
-                            "    <label>''</label>" +
-                            "</p><p>" +
-                            "    <label class='lbl-tipo'>Longitud</label>" +
-                            "    <input id='lon-g' class='gms' type='number' placeholder='G'>" +
-                            "    <label>°</label>" +
-                            "    <input id='lon-m' class='gms' type='number' placeholder='M'>" +
-                            "    <label>'</label>" +
-                            "    <input id='lon-s' class='gms' type='number' placeholder='S.SS'>" +
-                            "    <label>''</label>" +
-                            "</p>" +
-                            "  <p style='opacity:0.5;'><i>Coordenadas geográficas en SRS WGS84</i></p>" +
-                            "  <hr>"
-                            ;
-
-                    div.id = form_id;
-                    div.appendChild(form);
-
-                    var btn = document.createElement('button');
-                    btn.style.width = '150px';
-                    btn.innerHTML = "Aceptar";
-                    div.appendChild(btn);
-
-                    btn.onclick = function () {
-                        var lat_g = parseInt(form.querySelector('#lat-g').value);
-                        var lat_m = parseInt(form.querySelector('#lat-m').value);
-                        var lat_s = parseFloat(form.querySelector('#lat-s').value);
-
-                        var lon_g = parseInt(form.querySelector('#lon-g').value);
-                        var lon_m = parseInt(form.querySelector('#lon-m').value);
-                        var lon_s = parseFloat(form.querySelector('#lon-s').value);
-
-                        var inputs = form.querySelectorAll('input');
-                        var errores = false;
-                        for (var i = 0; i < inputs.length; i++) {
-                            if (inputs[i].value && typeof (Number(inputs[i].value)) === "number") {
-                                inputs[i].classList.remove('error');
-                            } else {
-                                inputs[i].classList.add('error');
-                                errores = true;
-                            }
-                        }
-
-                        if (!errores) {
-                            var lat = lat_g + (lat_m / 60) + (lat_s / 3600);
-                            var lon = lon_g + (lon_m / 60) + (lon_s / 3600);
-
-                            instancia.drawnItems.addLayer(L.marker([lat, lon]));
-                            control.getContainer().removeChild(control.getContainer().querySelector(".contenedor-coordenadas"));
-                        }
-                    };
-
-
-                    div.classList.add("contenedor-coordenadas");
-                    control.getContainer().appendChild(div);
-                } else {
-                    control.getContainer().removeChild(control.getContainer().querySelector(".contenedor-coordenadas"));
-                }
-            }, {position: 'topright'}).addTo(this.mapa);
-
+        _langConfig: function () {
             L.drawLocal = {
                 draw: {
                     toolbar: {
@@ -376,33 +285,43 @@
                     }
                 }
             };
+        },
+        // map initialization methods
+        _initContainer: function (id, options) {
+            var instancia = this;
+
+            this.mapa = L.map(id, options);
+
+            var mapa = this.mapa;
+
+            this.drawnItems = new L.FeatureGroup();
+            this.mapa.addLayer(this.drawnItems);
+
+
+            this.drawConfig = {
+                polygon: false,
+                polyline: false,
+                circle: false,
+                rectangle: false,
+                marker: false
+            };
+
+            this.dibujarGeometriaInicial();
+
+            if (this.options.metodo_captura.indexOf('Shp') !== -1) {
+                this.configurarSHP();
+            }
+            if (this.options.metodo_captura.indexOf('Coordenadas') !== -1) {
+                this.configurarCoordenadas();
+            }
+            if (this.options.metodo_captura.indexOf('Dibujo') !== -1) {
+                this.configurarDibujo();
+            }
+
 
             var drawControl = new L.Control.Draw({
                 position: 'topright',
-                draw: {
-                    polygon: {
-                        title: 'Polígono',
-                        allowIntersection: false,
-                        drawError: {
-                            color: '#b00b00',
-                            timeout: 1000
-                        },
-                        shapeOptions: {
-                            color: '#bada55'
-                        },
-                        showArea: true
-                    },
-                    polyline: {
-                        metric: true
-                                //allowIntersection: false
-                    },
-                    circle: {
-                        shapeOptions: {
-                            color: '#662d91'
-                        }
-                    },
-                    marker: true
-                },
+                draw: this.drawConfig,
                 edit: {
                     featureGroup: this.drawnItems
                 }
@@ -435,8 +354,168 @@
             }
             return this;
         },
+        configurarDibujo: function () {
+
+            if (!this.options.geometria_captura) {
+                this.options.geometria_captura = 'all';
+            }
+
+            switch (this.options.geometria_captura) {
+                case 'all':
+                {
+
+                    this.drawConfig.marker = true;
+
+                    this.drawConfig.polygon = {
+                        title: 'Polígono',
+                        allowIntersection: false,
+                        drawError: {
+                            color: '#b00b00',
+                            timeout: 1000
+                        },
+                        shapeOptions: {
+                            color: '#bada55'
+                        },
+                        showArea: true
+                    };
+                    this.drawConfig.polyline = {
+                        metric: true
+                                //allowIntersection: false
+                    };
+                    this.drawConfig.circle = {
+                        shapeOptions: {
+                            color: '#662d91'
+                        }
+                    };
+                    this.drawConfig.rectangle = true;
+
+                    break;
+                }
+                case 'Poligono':
+                {
+                    this.drawConfig.polygon = {
+                        title: 'Polígono',
+                        allowIntersection: false,
+                        drawError: {
+                            color: '#b00b00',
+                            timeout: 1000
+                        },
+                        shapeOptions: {
+                            color: '#bada55'
+                        },
+                        showArea: true
+                    };
+                    this.drawConfig.circle = {
+                        shapeOptions: {
+                            color: '#662d91'
+                        }
+                    };
+                    this.drawConfig.rectangle = true;
+                    break;
+                }
+                case 'Linea':
+                {
+                    this.drawConfig.polyline = {
+                        metric: true
+                                //allowIntersection: false
+                    };
+                    break;
+                }
+                case 'Punto':
+                {
+                    this.drawConfig.marker = true;
+                    break;
+                }
+            }
+        },
+        configurarCoordenadas: function () {
+            var instancia = this;
+
+            L.easyButton('<img src="images/icn_coordenadas.png" style="margin-left:-4px; margin-top:-1px;">', function (control, map) {
+                //control.getContainer().innerHTML = "<div style='width:150px;'><form><label>aaa</label></form></div>";
+                if (!control.getContainer().querySelector(".contenedor-coordenadas")) {
+                    var form_id = Math.random().toString(36).substring(7);
+                    var div = document.createElement('div');
+                    var form = document.createElement('form');
+                    form.classList.add('formulario-gms');
+                    form.innerHTML =
+                            "<p>" +
+                            "    <label class='lbl-tipo'>Latitud</label>" +
+                            "    <input id='lat-g' class='gms' type='number' placeholder='G' required>" +
+                            "    <label>°</label>" +
+                            "    <input id='lat-m' class='gms' type='number' placeholder='M'>" +
+                            "    <label>'</label>" +
+                            "    <input id='lat-s' class='gms' type='number' placeholder='S.SS'>" +
+                            "    <label>''</label>" +
+                            "</p><p>" +
+                            "    <label class='lbl-tipo'>Longitud</label>" +
+                            "    <input id='lon-g' class='gms' type='number' placeholder='G'>" +
+                            "    <label>°</label>" +
+                            "    <input id='lon-m' class='gms' type='number' placeholder='M'>" +
+                            "    <label>'</label>" +
+                            "    <input id='lon-s' class='gms' type='number' placeholder='S.SS'>" +
+                            "    <label>''</label>" +
+                            "</p>" +
+                            "  <p style='opacity:0.5;'><i>Coordenadas geográficas en SRS WGS84</i></p>" +
+                            "  <hr>"
+                            ;
+
+                    div.id = form_id;
+                    div.appendChild(form);
+
+                    var btn = document.createElement('button');
+                    btn.style.width = '150px';
+                    btn.innerHTML = "Aceptar";
+                    div.appendChild(btn);
+
+                    btn.onclick = function () {
+                        var lat_g = parseInt(form.querySelector('#lat-g').value);
+                        var lat_m = parseInt(form.querySelector('#lat-m').value);
+                        var lat_s = parseFloat(form.querySelector('#lat-s').value);
+
+                        var lon_g = parseInt(form.querySelector('#lon-g').value);
+                        var lon_m = parseInt(form.querySelector('#lon-m').value);
+                        var lon_s = parseFloat(form.querySelector('#lon-s').value);
+
+                        var inputs = form.querySelectorAll('input');
+                        var errores = false;
+                        for (var i = 0; i < inputs.length; i++) {
+                            if (inputs[i].value && typeof (Number(inputs[i].value)) === "number") {
+                                inputs[i].classList.remove('error');
+                            } else {
+                                inputs[i].classList.add('error');
+                                errores = true;
+                            }
+                        }
+
+                        if (!errores) {
+                            var lat = lat_g + (lat_m / 60) + (lat_s / 3600);
+                            var lon = lon_g + (lon_m / 60) + (lon_s / 3600);
+
+                            instancia.drawnItems.addLayer(L.marker([lat, lon]));
+                            control.getContainer().removeChild(control.getContainer().querySelector(".contenedor-coordenadas"));
+                        }
+                    };
+
+
+                    div.classList.add("contenedor-coordenadas");
+                    control.getContainer().appendChild(div);
+                } else {
+                    control.getContainer().removeChild(control.getContainer().querySelector(".contenedor-coordenadas"));
+                }
+            }, {position: 'topright'}).addTo(this.mapa);
+
+        },
         configurarSHP: function () {
             var instancia = this;
+
+            L.easyButton('<img src="images/icn_shp.png" style="margin-left:-4px; margin-top:-2px">',
+                    function (control, map) {
+                        instancia.upButton.click();
+                    },
+                    {
+                        position: 'topright'
+                    }).addTo(instancia.mapa);
 
             function readerLoad(reader) {
                 if (this.readyState !== 2 || this.error) {
@@ -448,7 +527,7 @@
                         for (var i = 0; i < layers.length; i++) {
                             instancia.drawnItems.addLayer(layers[i]);
                         }
-                        instancia.mapa.fitBounds(instancia.drawnItems.getBounds())
+                        instancia.mapa.fitBounds(instancia.drawnItems.getBounds());
                     });
 
                     //worker.data(this.result, [this.result]);
@@ -503,6 +582,20 @@
             });
             //add them to the map
             instancia.mapa.addControl(new NewButton());
+
+        },
+        dibujarGeometriaInicial: function () {
+            var instancia = this;
+            if (instancia.options && instancia.options.geometria_inicial) {
+                var geometria_inicial = L.geoJson(instancia.options.geometria_inicial);
+                for (var i = 0; i < geometria_inicial.getLayers().length; i++) {
+                    instancia.drawnItems.addLayer(geometria_inicial.getLayers()[i], {
+                        style: function (feature) {
+                            return {color: "#ff0000"};
+                        }
+                    });
+                }
+            }
 
         }
     });
