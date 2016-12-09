@@ -39,6 +39,12 @@
                 </header>-->
 
         <div id="mapid" class="mapa"></div>
+        <div class="leaflet-bottom leaflet-left">
+        	<input type="button" id="Btn2" value="Exportar Geometrias" onclick='a.obtenerGeometriasPunto();'/>
+        </div>
+        <div class="leaflet-top leaflet-right">
+        	<input type="button" id="Btn3" value="Actualizar Extent" onclick='a.actualizarExtent("50001");'/>
+        </div>
 
 
 
@@ -47,7 +53,9 @@
         <script src="bower_components/leaflet/dist/leaflet-src.js"></script>
         <script src="bower_components/leaflet-draw/dist/leaflet.draw-src.js"></script>
         <script src="bower_components/Leaflet.EasyButton/src/easy-button.js"></script>
+        <script src="bower_components/esri-leaflet/dist/esri-leaflet.js"></script>
         <script src="bower_components/shp/dist/shp.js"></script>
+        <script src="bower_components/wellknown/wellknown.js"></script>
         <!-- endbower -->
         <!-- endbuild -->
 
@@ -58,6 +66,7 @@
         <!-- endbuild -->
 
         <script>
+        
             L.Icon.Default.imagePath = 'images/';
 
             var a = IGAC.contenedor('mapid', {
@@ -81,12 +90,17 @@
                     },
                     "geometry": {
                         "type": "Point",
-                        "coordinates": [-104.99404, 39.75621]
+                        "coordinates": [-74.12939071655273, 4.63887883977555]
                     }
                 },
-                geometria_captura: 'Poligono',
-                metodo_captura: ['Coordenadas','Dibujo','Shp']
+                //geometria_captura: 'Punto',
+                //metodo_captura: ['Coordenadas','Dibujo','Shp'],
+                idModulo: 2,
+                idSistema: 2,
+                municipioId: '11001'
             });
+            
+            
 
         </script>
     </body>
