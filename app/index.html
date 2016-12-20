@@ -45,7 +45,9 @@
         <div class="leaflet-top leaflet-right">
         	<input type="button" id="Btn3" value="Actualizar Extent" onclick='a.actualizarExtent("50001");'/>
         </div>
-
+        <div class="leaflet-top leaflet-left">
+        	<input type="button" id="Btn3" value="Editar Registro" onclick='a.edicionRegistro(b);'/>
+        </div>
 
 
         <!-- build:js(.) scripts/vendor.js -->
@@ -81,7 +83,7 @@
                         id: 'mapbox.streets'
                     })
                 ],
-                geometria_inicial: {
+                /* geometria_inicial: {
                     "type": "Feature",
                     "properties": {
                         "name": "nombre de la geometria",
@@ -92,7 +94,7 @@
                         "type": "Point",
                         "coordinates": [-74.12939071655273, 4.63887883977555]
                     }
-                },
+                },  */
                 //geometria_captura: 'Punto',
                 //metodo_captura: ['Coordenadas','Dibujo','Shp'],
                 idModulo: 2,
@@ -100,7 +102,16 @@
                 municipioId: '11001'
             });
             
-            
+            var b = {
+                "type": "Feature",
+                "properties": {
+                    "name": "Feature de prueba"
+                },
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [-74.07806396484375, 4.5976427674255005]
+                }
+            };
 
         </script>
     </body>

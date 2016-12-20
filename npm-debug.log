@@ -1,0 +1,68 @@
+0 info it worked if it ends with ok
+1 verbose cli [ '/usr/bin/nodejs',
+1 verbose cli   '/usr/bin/npm',
+1 verbose cli   'install',
+1 verbose cli   '@turf/turf',
+1 verbose cli   '--save' ]
+2 info using npm@1.4.21
+3 info using node@v0.10.25
+4 warn package.json karma-jasmine@1.0.2 No README data
+5 warn package.json sass@0.5.0 No repository field.
+6 verbose readDependencies using package.json deps
+7 verbose cache add [ '@turf/turf', null ]
+8 verbose cache add name=undefined spec="@turf/turf" args=["@turf/turf",null]
+9 verbose parsed url { protocol: null,
+9 verbose parsed url   slashes: null,
+9 verbose parsed url   auth: null,
+9 verbose parsed url   host: null,
+9 verbose parsed url   port: null,
+9 verbose parsed url   hostname: null,
+9 verbose parsed url   hash: null,
+9 verbose parsed url   search: null,
+9 verbose parsed url   query: null,
+9 verbose parsed url   pathname: '@turf/turf',
+9 verbose parsed url   path: '@turf/turf',
+9 verbose parsed url   href: '@turf/turf' }
+10 verbose cache add name="" spec="turf/turf" args=["","turf/turf"]
+11 verbose parsed url { protocol: null,
+11 verbose parsed url   slashes: null,
+11 verbose parsed url   auth: null,
+11 verbose parsed url   host: null,
+11 verbose parsed url   port: null,
+11 verbose parsed url   hostname: null,
+11 verbose parsed url   hash: null,
+11 verbose parsed url   search: null,
+11 verbose parsed url   query: null,
+11 verbose parsed url   pathname: 'turf/turf',
+11 verbose parsed url   path: 'turf/turf',
+11 verbose parsed url   href: 'turf/turf' }
+12 silly lockFile c53aefc7-turf-turf turf/turf
+13 verbose lock turf/turf /home/davids/.npm/c53aefc7-turf-turf.lock
+14 info maybeGithub Attempting turf/turf from git://github.com/turf/turf
+15 silly lockFile abfce81f-git-github-com-turf-turf git://github.com/turf/turf
+16 verbose lock git://github.com/turf/turf /home/davids/.npm/abfce81f-git-github-com-turf-turf.lock
+17 verbose addRemoteGit [ 'git://github.com/turf/turf', 'master' ]
+18 silly lockFile abfce81f-git-github-com-turf-turf git://github.com/turf/turf
+19 silly lockFile abfce81f-git-github-com-turf-turf git://github.com/turf/turf
+20 info maybeGithub Attempting turf/turf from git+ssh://git@github.com:turf/turf
+21 silly lockFile 646ee829-git-github-com-turf-turf git@github.com:turf/turf
+22 verbose lock git@github.com:turf/turf /home/davids/.npm/646ee829-git-github-com-turf-turf.lock
+23 verbose addRemoteGit [ 'git@github.com:turf/turf', 'master' ]
+24 silly lockFile 646ee829-git-github-com-turf-turf git@github.com:turf/turf
+25 silly lockFile 646ee829-git-github-com-turf-turf git@github.com:turf/turf
+26 silly lockFile c53aefc7-turf-turf turf/turf
+27 silly lockFile c53aefc7-turf-turf turf/turf
+28 error addLocal Could not install turf/turf
+29 error Error: ENOENT, stat 'turf/turf'
+30 error If you need help, you may report this *entire* log,
+30 error including the npm and node versions, at:
+30 error     <http://github.com/npm/npm/issues>
+31 error System Linux 3.19.0-15-generic
+32 error command "/usr/bin/nodejs" "/usr/bin/npm" "install" "@turf/turf" "--save"
+33 error cwd /home/davids/git/cargar-geometrias
+34 error node -v v0.10.25
+35 error npm -v 1.4.21
+36 error path turf/turf
+37 error code ENOENT
+38 error errno 34
+39 verbose exit [ 34, true ]

@@ -3,6 +3,7 @@
 //Based on Leaflet 0.0.7 http://leafletjs.com
 (function (window, document, undefined) {
 	var arregloMetodo = new Array();
+	var capasIntersectar;
 	var capasMapa;
     var oldIGAC = window.IGAC,
             IGAC = {};
@@ -1452,8 +1453,14 @@
             this.mapa = L.map(id, options);
             var mapa = this.mapa;
         	
+            var idSistema = this.options.idSistema;
+            var idModulo = this.options.idModulo;
+            var url = 'http://172.17.2.107:8190/GPY-web/servicios/configurarParametros/getGeoJSON/';
+            var urlPeticion = url + idSistema + '/' + idModulo;
+            console.log(urlPeticion);
+            
         	var xmlhttp = new XMLHttpRequest();
-        	xmlhttp.open("GET", 'http://172.28.9.103:8000/GPY-web/servicios/configurarParametros/getGeoJSON/2/2', false);
+        	xmlhttp.open("GET", 'http://172.17.2.107:8190/GPY-web/servicios/configurarParametros/getGeoJSON/2/2', false);
         	xmlhttp.onreadystatechange = function() {
         		if (xmlhttp.readyState == XMLHttpRequest.DONE) {
         			if(xmlhttp.status == 200){
@@ -1462,6 +1469,7 @@
         					console.log(jsonRespuesta);
 
         					var metodoCaptura = jsonRespuesta.respuesta[0].respuesta.metodo_captura;
+        					capasIntersectar = jsonRespuesta.respuesta[0].respuesta.capas_interseccion;
 
         					for (var x=0; x<metodoCaptura.length;x++){
         						arregloMetodo.push(metodoCaptura[x].metodo);
@@ -1490,7 +1498,7 @@
         			}
         		}
 			}else{
-				console.log("NO VIENE EL ID DEL MUNICIPIO....SE TIENE QUE PONER POR DEFECTO");
+				console.log("NO VIENE EL ID DEL MUNICIPIO....SE TIENE QUE PONER POR DEFECTO SI SE QUIERE ENCUADRE POR DEFECTO");
 			}
         	
 //            var instancia = this;
@@ -1510,15 +1518,8 @@
                 rectangle: false,
                 marker: false
             };
-            /**
-             * para consultar valor en el html
-             */
-//            console.log(this.options.idModulo);
-//            console.log(this.options.idSistema);
-            /**
-             * 
-             */
-            this.dibujarGeometriaInicial();
+
+//            this.dibujarGeometriaInicial();
             if(this.options.requiere_interseccion){
             	this.configurarValidar();
             }
@@ -1532,16 +1533,6 @@
 			if (arregloMetodo.indexOf("Shp") > -1){
 				this.configurarSHP();
 			}
-            
-//            if (this.options.metodo_captura.indexOf('Shp') !== -1) {
-//            	this.configurarSHP();
-//            }
-//            if (this.options.metodo_captura.indexOf('Coordenadas') !== -1) {
-//            	this.configurarCoordenadas();
-//            }
-//            if (this.options.metodo_captura.indexOf('Dibujo') !== -1) {
-//            	this.configurarDibujo();
-//            }
 
             var drawControl = new L.Control.Draw({
                 position: 'topright',
@@ -1571,9 +1562,10 @@
             });
             
             instancia.drawnItems.on('layeradd', function(){
-        		console.log(instancia.drawnItems.getLayers());
-            	console.log("AGREGOOO");
-        	});
+            	while(instancia.drawnItems.getLayers().length > 1){
+            		instancia.drawnItems.removeLayer(instancia.drawnItems.getLayers()[0]);
+            	}
+            });
         },
         whenReady: function (callback, context) {
             if (this._loaded) {
@@ -1590,14 +1582,56 @@
                 //control.getContainer().innerHTML = "<div style='width:150px;'><form><label>aaa</label></form></div>";
                 instancia.intersectar();
             }, {position: 'bottomleft'}).addTo(this.mapa);
-            
-            
-
         },
         intersectar: function(){
         	
+//        	var cantidadCapasIntersectar = capasIntersectar.length;
+//        	console.log(cantidadCapasIntersectar);
         	this.intersectedItems.clearLayers();
+        	
         	/**Pendiente: iterar layers**/
+//        	for (var x = 0; x < cantidadCapasIntersectar; x++) {
+//        		var tipoServicio = capasIntersectar[x].tipo_servicio
+//        		if(tipoServicio == "ArcGis"){
+//        			var layer = L.esri.featureLayer({
+//        				url: "http://sigserv02.anla.gov.co:6080/arcgis/rest/services/Linea_Base_1976_2005_Precipitacion/Mapserver/0",
+//        				style: {
+//        					color: 'black',
+//        					weight: 1,
+//        					opacity: 0.4
+//        				}
+//        			});
+//
+//        			this.intersectedItems.addLayer(layer);       	
+//
+//        			layer.query()["intersects"](this.drawnItems.getLayers()[0]).ids(function(error, ids){
+//        				previousIds = ids;
+//        				if(ids){
+//        					console.log(layer);
+//        					console.log(ids);
+//        					var capaJSON = JSON.stringify(layer.getFeature(ids).feature);
+//        					console.log(capaJSON);
+//        					var arregloCapasInterseccion = layer;
+//        					console.log(arregloCapasInterseccion);
+//
+//        					for (var y = 0; y < ids.length; y++) {
+//        						var capaJSON = JSON.stringify(layer.getFeature(ids[y]).feature);
+//        						console.log(layer);
+//        					}
+//
+//        					for (var i = ids.length - 1; i >= 0; i--) {
+//        						layer.setFeatureStyle(ids[i], { color: 'red', weight: 2 });
+//        					}
+//        				}
+//        			});
+
+        	
+//				}else{
+//					
+//					
+//				}
+//				
+//			}
         	
         	/**
         	 * Para servicios ARCGIS
@@ -1610,17 +1644,30 @@
         			opacity: 0.4
         		}
         	});
-
-        	this.intersectedItems.addLayer(layer);
         	
-        	layer.query()["intersects"](this.drawnItems.getLayers()[0]).ids(function(error, ids){
-        	      previousIds = ids;
-        	      if(ids){
-        	    	  for (var i = ids.length - 1; i >= 0; i--) {
-        	    		  layer.setFeatureStyle(ids[i], { color: 'red', weight: 2 });
-        	    	  }
-        	      }
-        	    });
+        	if(this.drawnItems.getLayers()[0] == undefined){
+        		alert("Debe dibujar sobre el mapa para realizar la operación");
+        	}else{
+        		this.intersectedItems.addLayer(layer);
+        		
+        		layer.query()["intersects"](this.drawnItems.getLayers()[0]).ids(function(error, ids){
+            		previousIds = ids;
+            		if(ids){
+            			for (var y = 0; y < ids.length; y++) {
+            				var capaJSON = layer.getFeature(ids[y]).feature;
+                			console.log(capaJSON);
+						} 
+            			
+//            			var arregloCapasInterseccion = layer;
+//            			console.log(arregloCapasInterseccion);
+     
+            			for (var i = ids.length - 1; i >= 0; i--) {
+            				layer.setFeatureStyle(ids[i], { color: 'red', weight: 2 });
+            			}
+            		}
+            	});
+        	}        	
+        	
         	
         	/***Para servicios WFS*/
         	/*
@@ -1659,15 +1706,24 @@
         },
         obtenerGeometriasPunto: function(){
         	var instancia = this;
-        	var arregloCapasExportar = new Array();
+//        	var arregloCapasExportar = new Array();
+        	var existenCapas = instancia.drawnItems.getLayers()[0];
+        	var capasDibujadas;
         	
-        	var capasDibujadas = instancia.drawnItems.getLayers();
-        	for (var x = 0; x < capasDibujadas.length; x++) {
-        		arregloCapasExportar.push(capasDibujadas[x].toGeoJSON());
-//        		return console.log(capasDibujadas[x].toGeoJSON();
+        	if (existenCapas) {
+        		capasDibujadas = instancia.drawnItems.getLayers()[0].toGeoJSON();
+        		
+        		console.log(capasDibujadas);
+            	return capasDibujadas;
+			} else {
+				alert("Debe dibujar sobre el mapa");
 			}
-        	console.log(arregloCapasExportar);
-        	return arregloCapasExportar;
+        	
+//        	for (var x = 0; x < capasDibujadas.length; x++) {
+//        		arregloCapasExportar.push(capasDibujadas[x].toGeoJSON());
+////        		return console.log(capasDibujadas[x].toGeoJSON();
+//			}
+        	
         },
         configurarDibujo: function () {
 
@@ -1695,7 +1751,7 @@
                     };
                     this.drawConfig.polyline = {
                         metric: true
-                                //allowIntersection: false
+//                      allowIntersection: false
                     };
                     this.drawConfig.circle = {
                         shapeOptions: {
@@ -1732,7 +1788,7 @@
                 {
                     this.drawConfig.polyline = {
                         metric: true
-                                //allowIntersection: false
+//                      allowIntersection: false
                     };
                     break;
                 }
@@ -1899,20 +1955,20 @@
             instancia.mapa.addControl(new NewButton());
 
         },
-        dibujarGeometriaInicial: function () {
-            var instancia = this;
-            if (instancia.options && instancia.options.geometria_inicial) {
-                var geometria_inicial = L.geoJson(instancia.options.geometria_inicial);
-                for (var i = 0; i < geometria_inicial.getLayers().length; i++) {
-                    instancia.drawnItems.addLayer(geometria_inicial.getLayers()[i], {
-                        style: function (feature) {
-                            return {color: "#ff0000"};
-                        }
-                    });
-                }
-            }
-
-        },
+//        dibujarGeometriaInicial: function () {
+//            var instancia = this;
+//            if (instancia.options && instancia.options.geometria_inicial) {
+//                var geometria_inicial = L.geoJson(instancia.options.geometria_inicial);
+//                for (var i = 0; i < geometria_inicial.getLayers().length; i++) {
+//                    instancia.drawnItems.addLayer(geometria_inicial.getLayers()[i], {
+//                        style: function (feature) {
+//                            return {color: "#ff0000"};
+//                        }
+//                    });
+//                }
+//            }
+//
+//        },
         actualizarExtent: function(idMunicipio){
         	var instancia = this;
         	
@@ -1926,6 +1982,21 @@
     				break;
     			}
     		}
+        },
+        edicionRegistro: function(capa){
+        	var instancia = this;
+        	
+        	var capaPintar =  L.geoJson(capa);
+        	for (var i = 0; i < capaPintar.getLayers().length; i++) {
+        		console.log(instancia.drawnItems);
+                instancia.drawnItems.addLayer(capaPintar.getLayers()[i], {
+                    style: function (feature) {
+                        return {color: "#ff0000"};
+                    }
+                });
+            }
+        	
+        	instancia.mapa.fitBounds(instancia.drawnItems.getBounds());
         }
     });
 
